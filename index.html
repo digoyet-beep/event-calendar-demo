@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8">
+  <title>Liberte Kalendar - Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@600&display=swap');
+
+  body {
+    margin: 0;
+    padding: 20px 10px;
+    background: #050308;
+    display: flex;
+    justify-content: center;
+    font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  #liberte-calendar {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 16px 14px 22px;
+    background: radial-gradient(circle at top, #4a101f 0%, #150710 45%, #050308 100%);
+    border-radius: 18px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    color: #f6f0f4;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #liberte-calendar::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -40px;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(255,64,129,0.45), transparent 60%);
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  #liberte-calendar::after {
+    content: "";
+    position: absolute;
+    bottom: -80px;
+    left: -40px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(166,29,74,0.5), transparent 65%);
+    opacity: 0.65;
+    pointer-events: none;
+  }
+
+  #liberte-calendar-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  #liberte-calendar h2 {
+    text-align: center;
+    color: #ffe4f0;
+    margin-bottom: 4px;
+    font-family: "Playfair Display", serif;
+    font-size: 26px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  #liberte-calendar .subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: #f0c7d8;
+    margin-bottom: 18px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .month-block {
+    margin-bottom: 22px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border-radius: 14px;
+    padding: 10px 10px 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(6px);
+  }
+
+  .month-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffdde7;
+    margin-bottom: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+  }
+
+  .calendar-grid div {
+    padding: 10px 0;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .weekday {
+    font-weight: 600;
+    color: #ffbcd2;
+    background: transparent;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  .day {
+    position: relative;
+    color: #c3b5c0;
+  }
+
+  .day.active {
+    cursor: pointer;
+    color: #ffe8f1;
+    font-weight: 600;
+  }
+
+  .day.active .circle-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .day.active .circle-outer,
+  .day.active .circle-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+  }
+
+  .day.active .circle-outer {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(255, 71, 116, 0.85);
+    box-shadow: 0 0 12px rgba(255, 71, 116, 0.7);
+    animation: neonPulseOuter 1.9s infinite;
+  }
+
+  .day.active .circle-inner {
+    width: 22px;
+    height: 22px;
+    border: 1px solid rgba(255, 215, 230, 0.9);
+    box-shadow: 0 0 6px rgba(255, 215, 230, 0.7);
+    animation: neonPulseInner 1.9s infinite;
+  }
+
+  @keyframes neonPulseOuter {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+    50% { transform: translate(-50%, -50%) scale(1.25); opacity: 0.4; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  }
+
+  @keyframes neonPulseInner {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.5; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  }
+
+  .event-icon {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    width: 12px;
+    height: 12px;
+    stroke: #ffbcd2;
+    stroke-width: 1.5;
+    fill: none;
+    opacity: 0.95;
+  }
+
+  .calendar-note {
+    text-align: center;
+    font-size: 11px;
+    color: #e6bbd0;
+    margin-top: -6px;
+    opacity: 0.9;
+  }
+
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    z-index: 9998;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(14, 4, 14, 0.75);
+  }
+
+  .calendar-popup {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: rgba(20, 8, 20, 0.95);
+    padding: 20px 18px 18px;
+    width: 88%;
+    max-width: 360px;
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.8);
+    border: 1px solid rgba(255,255,255,0.12);
+    opacity: 0;
+    transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+  }
+
+  .calendar-popup.active {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .calendar-popup h3 {
+    margin-top: 0;
+    margin-bottom: 6px;
+    font-family: "Playfair Display", serif;
+    font-size: 20px;
+    color: #ffe4f2;
+  }
+
+  .popup-date {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #f7c3d4;
+    margin-bottom: 10px;
+  }
+
+  .calendar-popup p {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: #f4dfe9;
+    white-space: pre-line;
+  }
+
+  .popup-btns {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .popup-close,
+  .popup-book {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-align: center;
+  }
+
+  .popup-close {
+    background: rgba(255,255,255,0.08);
+    color: #ffe4f2;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .popup-book {
+    background: linear-gradient(135deg, #ff3a6f, #b0123b);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  @media (max-width: 480px) {
+    .calendar-grid div {
+      padding: 9px 0;
+      font-size: 12px;
+    }
+  }
+  </style>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<svg style="display:none;" aria-hidden="true" focusable="false">
+  <symbol id="icon-dj" viewBox="0 0 24 24">
+    <path d="M5 12a7 7 0 0 1 14 0" />
+    <rect x="4" y="12" width="3" height="6" rx="1.5" />
+    <rect x="17" y="12" width="3" height="6" rx="1.5" />
+  </symbol>
+  <symbol id="icon-band" viewBox="0 0 24 24">
+    <rect x="9" y="3" width="6" height="10" rx="3" />
+    <path d="M12 13v5" />
+    <path d="M9 21h6" />
+  </symbol>
+</svg>
+
+<div id="liberte-calendar">
+  <div id="liberte-calendar-inner">
+    <h2>Liberte Kalendar</h2>
+    <div class="subtitle">Decembar 2025 - Januar 2026</div>
+
+    <div class="month-block">
+      <div class="month-title">Decembar 2025</div>
+      <div class="calendar-grid">
+        <div class="weekday">S</div>
+        <div class="weekday">M</div>
+        <div class="weekday">T</div>
+        <div class="weekday">W</div>
+        <div class="weekday">T</div>
+        <div class="weekday">F</div>
+        <div class="weekday">S</div>
+
+        <div></div>
+
+        <div class="day"><span>1</span></div>
+        <div class="day"><span>2</span></div>
+        <div class="day"><span>3</span></div>
+        <div class="day"><span>4</span></div>
+
+        <div class="day active" data-date="2025-12-05">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>5</span>
+          <svg class="event-icon"><use href="#icon-dj"></use></svg>
+        </div>
+
+        <div class="day active" data-date="2025-12-06">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>6</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day"><span>7</span></div>
+        <div class="day"><span>8</span></div>
+        <div class="day"><span>9</span></div>
+        <div class="day"><span>10</span></div>
+        <div class="day"><span>11</span></div>
+
+        <div class="day active" data-date="2025-12-12">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>12</span>
+          <svg class="event-icon"><use href="#icon-dj"></use></svg>
+        </div>
+
+        <div class="day active" data-date="2025-12-13">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>13</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day"><span>14</span></div>
+        <div class="day"><span>15</span></div>
+        <div class="day"><span>16</span></div>
+        <div class="day"><span>17</span></div>
+        <div class="day"><span>18</span></div>
+
+        <div class="day active" data-date="2025-12-19">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>19</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day active" data-date="2025-12-20">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>20</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day"><span>21</span></div>
+        <div class="day"><span>22</span></div>
+        <div class="day"><span>23</span></div>
+        <div class="day"><span>24</span></div>
+        <div class="day"><span>25</span></div>
+
+        <div class="day active" data-date="2025-12-26">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>26</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day active" data-date="2025-12-27">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>27</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day"><span>28</span></div>
+        <div class="day"><span>29</span></div>
+        <div class="day"><span>30</span></div>
+
+        <div class="day active" data-date="2025-12-31">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>31</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="month-block">
+      <div class="month-title">Januar 2026</div>
+      <div class="calendar-grid">
+        <div class="weekday">S</div>
+        <div class="weekday">M</div>
+        <div class="weekday">T</div>
+        <div class="weekday">W</div>
+        <div class="weekday">T</div>
+        <div class="weekday">F</div>
+        <div class="weekday">S</div>
+
+        <div></div><div></div><div></div>
+
+        <div class="day active" data-date="2026-01-01">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>1</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day active" data-date="2026-01-02">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>2</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day active" data-date="2026-01-03">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>3</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day"><span>4</span></div>
+        <div class="day"><span>5</span></div>
+        <div class="day"><span>6</span></div>
+
+        <div class="day active" data-date="2026-01-07">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>7</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day active" data-date="2026-01-08">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>8</span>
+          <svg class="event-icon"><use href="#icon-dj"></use></svg>
+        </div>
+
+        <div class="day active" data-date="2026-01-09">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>9</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+
+        <div class="day active" data-date="2026-01-10">
+          <div class="circle-wrapper"><div class="circle-outer"></div><div class="circle-inner"></div></div>
+          <span>10</span>
+          <svg class="event-icon"><use href="#icon-band"></use></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="calendar-note">
+      Tap na oznacene datume otkriva program veceri.
+    </div>
+  </div>
+</div>
+
+<div class="popup-overlay"></div>
+
+<div class="calendar-popup" id="calendarPopup">
+  <h3 id="popupTitle">Liberte Event</h3>
+  <div class="popup-date" id="popupDate">Datum</div>
+  <p id="popupContent">Ucitavanje...</p>
+
+  <div class="popup-btns">
+    <div class="popup-close">Zatvori</div>
+    <a class="popup-book" href="https://www.instagram.com/liberte.conceptbar/" target="_blank">Rezervisi mesto</a>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://mkklndfvcftchuyyrded.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_secret_9w6nlXgB_inO0kcMmcN6HA_oW4vYI-K";
+
+  const { createClient } = window.supabase;
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const eventsByDate = {};
+
+  function formatSerbianDate(iso) {
+    const [year, month, day] = iso.split("-");
+    const m = parseInt(month, 10);
+    const months = [
+      "januar", "februar", "mart", "april", "maj", "jun",
+      "jul", "avgust", "septembar", "oktobar", "novembar", "decembar"
+    ];
+    return `${parseInt(day, 10)}. ${months[m-1]} ${year}`;
+  }
+
+  async function loadEvents() {
+    const { data, error } = await supabaseClient
+      .from("events")
+      .select("*")
+      .eq("client_id", "liberte")
+      .order("date", { ascending: true });
+
+    if (error) {
+      console.error("Greska pri ucitavanju:", error);
+      return;
+    }
+
+    data.forEach(ev => {
+      eventsByDate[ev.date] = ev;
+    });
+  }
+
+  function setupClicks() {
+    const overlay = document.querySelector(".popup-overlay");
+    const popup = document.getElementById("calendarPopup");
+    const popupTitle = document.getElementById("popupTitle");
+    const popupDate = document.getElementById("popupDate");
+    const popupContent = document.getElementById("popupContent");
+    const closeBtn = document.querySelector(".popup-close");
+
+    document.querySelectorAll(".day.active").forEach(day => {
+      day.addEventListener("click", () => {
+        const dateKey = day.dataset.date;
+        const ev = eventsByDate[dateKey];
+        if (!ev) {
+          popupTitle.innerText = "Liberte Event";
+          popupDate.innerText = formatSerbianDate(dateKey);
+          popupContent.textContent = "Nema detalja za ovaj datum.";
+        } else {
+          popupTitle.innerText = ev.title || "Liberte Event";
+          popupDate.innerText = formatSerbianDate(dateKey);
+          let text = ev.title || "";
+          if (ev.start_time && ev.end_time) {
+            const st = ev.start_time.slice(0,5);
+            const et = ev.end_time.slice(0,5);
+            text += `\n${st}-${et}`;
+          }
+          if (ev.description) {
+            text += `\n${ev.description}`;
+          }
+          popupContent.textContent = text;
+        }
+
+        overlay.style.display = "block";
+        popup.style.display = "block";
+        void popup.offsetWidth;
+        popup.classList.add("active");
+      });
+    });
+
+    function closePopup() {
+      popup.classList.remove("active");
+      setTimeout(() => {
+        overlay.style.display = "none";
+        popup.style.display = "none";
+      }, 180);
+    }
+
+    closeBtn.addEventListener("click", closePopup);
+    overlay.addEventListener("click", closePopup);
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await loadEvents();
+    setupClicks();
+  });
+</script>
+
+</body>
+</html>
